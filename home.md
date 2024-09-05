@@ -1,9 +1,9 @@
 # WebGoat - Walkthrough
 
-## 1. Introduzione
+## Introduzione
 
-**Obiettivo della demo:**  
-Questa relazione descrive le attività svolte utilizzando WebGoat, una piattaforma di insegnamento delle vulnerabilità di sicurezza web. L'obiettivo è dimostrare alcune tecniche di attacco comuni e analizzare le difese contro di esse.
+**Obiettivo:**  
+L'obiettivo di questo report è 
 
 **Strumenti utilizzati:**
 - WebGoat (versione )
@@ -11,7 +11,7 @@ Questa relazione descrive le attività svolte utilizzando WebGoat, una piattafor
 - Docker (per eseguire WebGoat)
 - Browser - Chrome
 
-## 2. Configurazione dell'Ambiente
+## Configurazione dell'Ambiente
 
 **Passaggi per la configurazione dell'ambiente:**
 1. **Installazione di Docker e WebGoat:**
@@ -20,7 +20,7 @@ Questa relazione descrive le attività svolte utilizzando WebGoat, una piattafor
    docker run -p 8080:8080 webgoat/webgoat
 
 
-![Photo of Mountain](images/cyber-security.jpg)
+(images/cyber-security.jpg)
 
 [Docsify](https://docsify.js.org/#/) can generate article, portfolio and documentation websites on the fly. Unlike Docusaurus, Hugo and many other Static Site Generators (SSG), it does not generate static html files. Instead, it smartly loads and parses your Markdown content files and displays them as a website.
 
