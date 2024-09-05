@@ -1,6 +1,24 @@
-# Cybersecurity Report
+# WebGoat - Walkthrough
 
-## Create, Share and Collaborate
+## 1. Introduzione
+
+**Obiettivo della demo:**  
+Questa relazione descrive le attività svolte utilizzando WebGoat, una piattaforma di insegnamento delle vulnerabilità di sicurezza web. L'obiettivo è dimostrare alcune tecniche di attacco comuni e analizzare le difese contro di esse.
+
+**Strumenti utilizzati:**
+- WebGoat (versione )
+- Burp Suite Community Edition
+- Docker (per eseguire WebGoat)
+- Browser - Chrome
+
+## 2. Configurazione dell'Ambiente
+
+**Passaggi per la configurazione dell'ambiente:**
+1. **Installazione di Docker e WebGoat:**
+   ```bash
+   docker pull webgoat/webgoat
+   docker run -p 8080:8080 webgoat/webgoat
+
 
 ![Photo of Mountain](images/cyber-security.jpg)
 
@@ -8,7 +26,6 @@
 
 ## Introduction
 
-**Markdown** is a system-independent markup language that is easier to learn and use than **HTML**.
 
 ![The Markdown Mark](images/markdown-red.png)  
 _Figure 1: The Markdown Mark_
