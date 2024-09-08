@@ -1,6 +1,6 @@
 # Attacking Mr Robot - VulnHub
 
-## 1. Introduzione
+## 1. Introduction
 This write-up details the steps I took to solve the MR Robot vulnerable machine from VulnHub. The VM is inspired by the popular TV show "Mr. Robot" and contains three flags, each of increasing difficulty. The primary goal is to capture all three flags while demonstrating common hacking techniques such as brute-force attacks, hash cracking, and privilege escalation.
 
 The demonstration was carried out individually, following several walkthroughs and guides found online (referenced at the end of this report).
@@ -8,13 +8,35 @@ The demonstration was carried out individually, following several walkthroughs a
 **Threat Model:**  
 In this scenario, the threat model assumes that the attacker is on the same local network as the MR Robot virtual machine.
 
-## Configurazione dell'Ambiente
+## 2. Enviroment Configuration
 
-**Passaggi per la configurazione dell'ambiente:**
-**Tools:**
-- Mr-Robot: 1 (Relese Date: 28 Jun 2016)
+### Tools:
 - VirtualBox
-- Kali Linux Virtual Machine
+- Mr-Robot 1 (Relese Date: 28 Jun 2016): Target Virtual Machine
+- Kali Linux: Attacker Virtual Machine.
+  - Nmap: Network scanning tool.
+  - Dirb: Directory brute-forcing tool.
+  - Hydra: Brute-forcing tool for login credentials.
+  - John the Ripper: Password cracking tool.
+  - PentestMonkey PHP Reverse Shell: For obtaining shell access.
+  - Netcat: Networking utility for reverse shells.
+  - Python: Used to spawn an interactive shell.
+
+
+
+
+## Reconnaissance
+### Gathering Victim Host Information
+
+```
+sudo netdiscover -r 192.168.227.0/24
+```
+
+(images/netdiscover.png)  
+
+(images/nmap.png)
+  
+## 
 
 ## Privilege Escalation
 Capturing the Second Flag
@@ -35,8 +57,10 @@ password: abcdefghijklmnopqrstuvwxyz
 ```
 
 I switched to the user robot using the cracked password:
-``` su robot
-    Password: abcdefghijklmnopqrstuvwxyz
+
+``` 
+su robot
+Password: abcdefghijklmnopqrstuvwxyz
 ```
 Once logged in as robot, I retrieved the second flag:
 
