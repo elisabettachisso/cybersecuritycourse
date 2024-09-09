@@ -28,15 +28,40 @@ In this scenario, the threat model assumes that the attacker is on the same loca
 ## Reconnaissance
 ### Gathering Victim Host Information
 
-```
-sudo netdiscover -r 192.168.227.0/24
-```
+Descrizione netdiscover:
 
-(images/netdiscover.png)  
+```sudo netdiscover -r 192.168.227.0/24```
 
-(images/nmap.png)
-  
+![netdiscover](images/netdiscover.png)  
+
+
+descrizione nmap
+
+```nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open```
+
+Output:
+![nmap](images/nmap.png)
+
+DIRB
+
+```sudo dirb http://192.168.227.7```
+
+Output:
+![nmap](images/dirb-start.png)
+![nmap](images/dirb-end.png)
 ## 
+
+![nmap](images/1flag.png)
+
+
+#### First key:
+![nmap](images/1key.png)
+
+
+## Brute Force
+![nmap](images/usr.png)
+![nmap](images/psw.png)
+
 
 ## Privilege Escalation
 Capturing the Second Flag
