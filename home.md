@@ -1,6 +1,4 @@
-# Attacking Mr Robot - VulnHub
-
-![mr-robot](images/mr-robot.jpg)
+# Exploiting the Mr. Robot VM on VulnHub
 
 ## Introduction
 This write-up details the steps I took to solve the MR Robot vulnerable machine available on VulnHub. The VM is inspired by the popular TV show Mr. Robot and contains three flags, each of increasing difficulty. The main objective was to capture all three flags while demonstrating a variety of hacking techniques, including:
@@ -41,17 +39,11 @@ The first step in attacking the target machine was to identify its IP address on
 netdiscover -r 192.168.227.0/24
 ```
 
-<img src="images/netdiscover.png" style="align: right" alt="netdi" width="600"/>
-
 This revealed that the target machine's IP address was ```192.168.227.7```. With this information, I proceeded with Nmap to identify the open ports and services running on the target:
 
 ```bash
 nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open
 ```
-
-**Nmap Output:**
-
-<img src="images/nmap.png" style="align: right" alt="nmap" width="600"/>
 
 The scan revealed two important open ports:
 
@@ -60,18 +52,12 @@ The scan revealed two important open ports:
 
 This indicated that a web service was running on the machine, so I navigated to the target's web server at ```http://192.168.227.7``` to investigate further.
 
-<img src="images/webserver.png" style="align: right" alt="nmap" width="600"/>
-
 DIRB
 Since the target was running a web server, I decided to search for hidden directories that might reveal sensitive information using Dirb:
 
 ```bash
 dirb http://192.168.227.7
 ```
-
-<img src="images/dirb-start.png" style="align: right" alt="nmap" width="600"/>
-
-<img src="images/dirb-end.png" style="align: right" alt="nmap" width="600"/>
 
 The Dirb scan uncovered several directories, particularly ones related to WordPress, such as ```/wp-admin```, confirming that the target was running WordPress. Additionally, it revealed the existence of ```robots.txt```, which is a file typically used to prevent certain areas of the website from being indexed by search engines.
 
@@ -83,28 +69,25 @@ Navigating to the file ```http://192.168.227.7/robots.txt``` I discovered two im
 
 By accessing these files, I was able to download the wordlist and retrieve the first key.
 
-<img src="images/1flag.png" style="align: right" alt="nmap" width="600"/>
-
 **Retrieving the First Key:**
 
-By visiting ```http://192.168.227.7/key-1-of-3.txt```, I retrieved the first key:
+By visiting ```http://192.168.227.7/key-1-of-3.txt```, I retrieved the first key: 
 
-<img src="images/1key.png" style="align: right" alt="nmap" width="600"/>
+```
+073403c8a58a1f80d943455fb30724b9
+```
+
 
 ## Brute Force Attack
 Once I discovered the WordPress login page at ```http://192.168.227.7/wp-login.php```, I needed to brute-force the login page of the WordPress installation. 
 
 First, I used Burp Suite to capture and analyze the login requests and responses. This helped me identify the exact parameters used in the HTTP POST request and the distinct error messages for invalid usernames and passwords, which were essential for configuring Hydra.
 
-<img src="images/burp.png" style="align: right" alt="nmap" width="600"/>
-
 In this phase I used the ```fsocity.dic``` wordlist, but since it contained over 800,000 entries with many duplicates, I filtered the list to create a more efficient wordlist:
 
 ```bash
 sort fsocity.dic | uniq > fs-list
 ```
-
-<img src="images/usr.png" style="align: right" alt="nmap" width="600"/>
 
 This reduced the list to about 11,000 unique entries.
 
@@ -121,8 +104,6 @@ The attack identified ```elliot``` as a valid username.
 
 Next, I used Hydra again to brute-force the password for ```elliot```, using the same ```fsocity.dic``` wordlist. I modified the command to recognize the distinct error message for invalid passwords:
 
-
-<img src="images/psw.png" style="align: right" alt="nmap" width="600"/>
 
 I ran the following command:
 ```bash
@@ -225,12 +206,7 @@ To escalate privileges to ```root```, I searched for SUID binaries, which allow 
 ```bash
 find / -perm -u=s -type f 2>/dev/null
 ```
-
-Among the results, I found Nmap with the SUID bit set. The version of Nmap installed on the system supported interactive mode, which allows commands to be executed as root.
-
-<img src="images/find.png" style="align: right" alt="nmap" width="600"/>
-
-
+I discovered that Nmap had the SUID bit set. The version of Nmap installed on the machine allowed for interactive mode, which I used to gain a root shell:
 
 ```bash
 nmap --interactive
@@ -243,9 +219,10 @@ At this point I spawned a root shell and captured the final flag:
 ```bash
 !sh
 cat /root/key-3-of-3.txt
+04787ddef27c3dee1ee161b21670b4e4
 ```
 
-<img src="images/root-3.png" style="align: right" alt="nmap" width="600"/>
+
 
 ## Conclusions
 This write-up detailed my experience exploiting the MR Robot VM from VulnHub. The process involved reconnaissance, brute-force attacks, exploitation, and privilege escalation, culminating in capturing all three flags.
