@@ -34,7 +34,7 @@ The first step was to discover the target machine's IP address on the local netw
 netdiscover -r 192.168.227.0/24
 ```
 
-![netdiscover](images/netdiscover.png)  
+<img src="images/netdiscover.png" style="align: right" alt="netdi" width="400"/>
 
 
 This revealed the IP address of the MR Robot machine as 192.168.227.7. With this information, I proceeded with Nmap to identify the open ports and services running on the target:
@@ -43,8 +43,8 @@ This revealed the IP address of the MR Robot machine as 192.168.227.7. With this
 nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open
 ```
 
-Output:
-![nmap](images/nmap.png)
+<img src="images/nmap.png" style="align: right" alt="nmap" width="400"/>
+
 The scan revealed a web server running on port 80. I navigated to the web page to investigate further:
 
 ![webserver](images/webserver.png)
