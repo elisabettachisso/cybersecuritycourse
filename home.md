@@ -1,6 +1,6 @@
 # Attacking Mr Robot - VulnHub
 ![nmrrobot](images/mr-robot.jpg) 
-## 1. Introduction
+## Introduction
 This write-up details the steps I took to solve the MR Robot vulnerable machine from VulnHub. The VM is inspired by the popular TV show "Mr. Robot" and contains three flags, each of increasing difficulty. The primary goal is to capture all three flags while demonstrating common hacking techniques such as brute-force attacks, hash cracking, and privilege escalation.
 
 The demonstration was carried out individually, following several walkthroughs and guides found online (referenced at the end of this report).
@@ -8,7 +8,7 @@ The demonstration was carried out individually, following several walkthroughs a
 **Threat Model:**  
 In this scenario, the threat model assumes that the attacker is on the same local network as the MR Robot virtual machine.
 
-## 2. Enviroment Configuration
+## Enviroment Configuration
 
 ### Tools:
 - VirtualBox
