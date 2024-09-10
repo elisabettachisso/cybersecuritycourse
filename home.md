@@ -47,7 +47,7 @@ nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open
 
 The scan revealed a web server running on port 80. I navigated to the web page to investigate further:
 
-<img src="webserver.png" style="align: right" alt="nmap" width="600"/>
+<img src="images/webserver.png" style="align: right" alt="nmap" width="600"/>
 
 DIRB
 Since the target was running a web server, I decided to search for hidden directories that might reveal sensitive information using Dirb:
