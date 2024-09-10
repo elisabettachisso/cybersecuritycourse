@@ -1,5 +1,5 @@
 # Attacking Mr Robot - VulnHub
-<img src="images/mr-robot.jpg" style="align: right" alt="Mr Robot" width="400"/>
+<img src="images/mr-robot.jpg" style="align: right" alt="Mr Robot" width="600"/>
 
 ## Introduction
 This write-up details the steps I took to solve the MR Robot vulnerable machine from VulnHub. The VM is inspired by the popular TV show "Mr. Robot" and contains three flags, each of increasing difficulty. The primary goal is to capture all three flags while demonstrating common hacking techniques such as brute-force attacks, hash cracking, and privilege escalation.
@@ -34,7 +34,7 @@ The first step was to discover the target machine's IP address on the local netw
 netdiscover -r 192.168.227.0/24
 ```
 
-<img src="images/netdiscover.png" style="align: right" alt="netdi" width="400"/>
+<img src="images/netdiscover.png" style="align: right" alt="netdi" width="600"/>
 
 
 This revealed the IP address of the MR Robot machine as 192.168.227.7. With this information, I proceeded with Nmap to identify the open ports and services running on the target:
@@ -43,11 +43,11 @@ This revealed the IP address of the MR Robot machine as 192.168.227.7. With this
 nmap 192.168.227.7 -sV -T4 -oA nmap-scan -open
 ```
 
-<img src="images/nmap.png" style="align: right" alt="nmap" width="400"/>
+<img src="images/nmap.png" style="align: right" alt="nmap" width="600"/>
 
 The scan revealed a web server running on port 80. I navigated to the web page to investigate further:
 
-![webserver](images/webserver.png)
+<img src="webserver.png" style="align: right" alt="nmap" width="600"/>
 
 DIRB
 Since the target was running a web server, I decided to search for hidden directories that might reveal sensitive information using Dirb:
@@ -56,8 +56,10 @@ Since the target was running a web server, I decided to search for hidden direct
 dirb http://192.168.227.7
 ```
 
-![dirb-start](images/dirb-start.png)
-![dirb-end](images/dirb-end.png)
+<img src="images/dirb-start.png" style="align: right" alt="nmap" width="600"/>
+
+<img src="images/dirb-end
+.png" style="align: right" alt="nmap" width="600"/>
 
 The Dirb scan uncovered several directories, particularly ones related to WordPress, such as ```/wp-admin```, confirming that the target was running WordPress. Additionally, it revealed the existence of robots.txt, a file commonly used to instruct web crawlers on what content not to index.
 
@@ -66,22 +68,22 @@ Navigating to the file ```http://192.168.227.7/robots.txt``` revealed some cruci
 - **fsocity.dic**: A wordlist file containing a large number of words, which I later used in brute-force attacks.
 - **key-1-of-3.txt**: This file contained the first flag, marking the first step in the challenge.
 
-![1flag](images/1flag.png)
-
+<img src="images/1flag.png" style="align: right" alt="nmap" width="600"/>
 I retrieved the first flag by visiting ```/key-1-of-3.txt```:
-![1key](images/1key.png)
+
+<img src="images/1key.png" style="align: right" alt="nmap" width="600"/>
 
 ## Brute Force Attack
 Once I discovered the WordPress login page at ```http://192.168.227.7/wp-login.php```, I began analyzing the server's responses to incorrect login attempts using Burp Suite. The server returned a clear error message, "Invalid username", when the username was incorrect, allowing me to focus on brute-forcing the username first.
 
-![burp](images/burp.png)
+<img src="images/burp.png" style="align: right" alt="nmap" width="600"/>
 
 I used the fsocity.dic wordlist, but since it contained over 800,000 entries with many duplicates, I filtered the list to create a more efficient wordlist:
 
 ```bash
 sort fsocity.dic | uniq > fs-list
 ```
-![usr](images/usr.png)
+<img src="images/usr.png" style="align: right" alt="nmap" width="600"/>
 
 This reduced the list to about 11,000 unique entries.
 
@@ -92,7 +94,7 @@ Using Hydra, I started brute-forcing the WordPress login page to find a valid us
 hydra -L fs-list -p test 192.168.227.7 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^:F=Invalid username" -t 30
 ```
 
-![hydra1](images/hydra-1.png)
+<img src="images/psw.png" style="align: right" alt="nmap" width="600"/>
 
 The attack identified elliot as a valid username. I then brute-forced the password by targeting the "The password you entered for the username" error message:
 
