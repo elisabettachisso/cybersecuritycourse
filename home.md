@@ -11,17 +11,17 @@ This write-up details the steps I took to solve the MR Robot vulnerable machine 
 **Threat Model:**  
 In this scenario, the **threat model** assumes that the attacker is on the same local network as the Mr Robot virtual machine, allowing direct interaction with the services exposed by the target. This represents a scenario where the attacker has already gained access to the internal network.
 
-## Enviroment Configuration
+## Environment Configuration
 For this attack, I used the following setup and tools:
 
 ### Tools:
 - **VirtualBox**: Virtualization software used to run the target VM and attacker VM.
-- **Mr-Robot 1** (Relese Date: 28 Jun 2016): Target virtual machine containing the vulnerabilities.
+- **Mr-Robot 1** (Release Date: 28 Jun 2016): Target virtual machine containing the vulnerabilities.
 - **Kali Linux**: Attacker virtual machine running several penetration testing tools.
 
-  Tools already installed on Kali:
-  - **Netdiscover**: Used for identifying the IP address of Mr. Robot's machine.
-  - **Nmap**: Used for network scanning to identify open ports and services.
+**Tools already installed on Kali:**
+ - **Netdiscover**: Used for identifying the IP address of Mr. Robot's machine.
+ - **Nmap**: Used for network scanning to identify open ports and services.
   - **Dirb**: Directory brute-forcing tool used to discover hidden files and directories on the web server.
   - **Burp Suite** (Community Edition): Used for intercepting and analyzing HTTP requests.
   - **Hydra**: Brute-forcing tool for cracking login credentials.
@@ -33,7 +33,7 @@ For this attack, I used the following setup and tools:
 ## Reconnaissance
 ### Gathering Information
 
-The first step in attacking the target machine was to identify its IP address on the local network. I used netdiscover, a tool designed for ARP scanning, to identify live hosts within the same subnet:
+The first step in attacking the target machine was to identify its IP address on the local network. I used **Netdiscover**, a tool designed for ARP scanning, to identify live hosts within the same subnet:
 
 ```bash
 netdiscover -r 192.168.227.0/24
@@ -52,7 +52,8 @@ The scan revealed two important open ports:
 
 This indicated that a web service was running on the machine, so I navigated to the target's web server at ```http://192.168.227.7``` to investigate further.
 
-DIRB
+#### DIRB
+
 Since the target was running a web server, I decided to search for hidden directories that might reveal sensitive information using Dirb:
 
 ```bash
@@ -135,7 +136,6 @@ $port = 7777;
 I set up a Netcat listener on my attacking machine to listen for incoming connections on port 7777:
 
 ```bash
-Copia codice
 nc -lnvp 7777
 ```
 
@@ -170,7 +170,6 @@ echo c3fcd3d76192e4007dfb496cca67e13b > hash
 2. Next, I used John the Ripper with the ```rockyou.txt``` wordlist to crack the MD5 hash:
 
 ```bash
-Copia codice
 john hash --wordlist=/usr/share/wordlists/rockyou.txt --format=Raw-MD5
 ```
 
