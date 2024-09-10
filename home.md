@@ -9,7 +9,6 @@ This write-up details the steps I took to solve the MR Robot vulnerable machine 
 - Hash cracking
 - Privilege escalation
 
-The demonstration was carried out independently, following walkthroughs and guides (referenced at the end of this report).
 
 **Threat Model:**  
 In this scenario, the **threat model** assumes that the attacker is on the same local network as the Mr Robot virtual machine, allowing direct interaction with the services exposed by the target. This represents a scenario where the attacker has already gained access to the internal network.
@@ -18,20 +17,19 @@ In this scenario, the **threat model** assumes that the attacker is on the same 
 For this attack, I used the following setup and tools:
 
 ### Tools:
-- VirtualBox: Virtualization software used to run the target VM and attacker VM.
-- Mr-Robot 1 (Relese Date: 28 Jun 2016): Target virtual machine containing the vulnerabilities.
-- Kali Linux: Attacker virtual machine running several penetration testing tools.
+- **VirtualBox**: Virtualization software used to run the target VM and attacker VM.
+- **Mr-Robot 1** (Relese Date: 28 Jun 2016): Target virtual machine containing the vulnerabilities.
+- **Kali Linux**: Attacker virtual machine running several penetration testing tools.
 
   Tools already installed on Kali:
-  - Netdiscover: Used for identifying the IP address of Mr. Robot's machine.
-  - Nmap: Used for network scanning to identify open ports and services.
-  - Dirb: Directory brute-forcing tool used to discover hidden files and directories on the web server.
-  - Burp Suite (Community Edition): Used for intercepting and analyzing HTTP requests.
-  - Hydra: Brute-forcing tool for cracking login credentials.
-  - PentestMonkey PHP Reverse Shell: A PHP script used to create a reverse shell and gain access to the system.
-  - Netcat: Networking utility for establishing reverse shells.
-  - John the Ripper: Password cracking tool used for MD5 hash cracking.
-  - Python: Used to spawn an interactive shell on the compromised machine.
+  - **Netdiscover**: Used for identifying the IP address of Mr. Robot's machine.
+  - **Nmap**: Used for network scanning to identify open ports and services.
+  - **Dirb**: Directory brute-forcing tool used to discover hidden files and directories on the web server.
+  - **Burp Suite** (Community Edition): Used for intercepting and analyzing HTTP requests.
+  - **Hydra**: Brute-forcing tool for cracking login credentials.
+  - **Netcat**: Networking utility for establishing reverse shells.
+  - **John the Ripper**: Password cracking tool used for MD5 hash cracking.
+  - **Python**: Used to spawn an interactive shell on the compromised machine.
 
 
 ## Reconnaissance
@@ -80,6 +78,7 @@ The Dirb scan uncovered several directories, particularly ones related to WordPr
 Navigating to the file ```http://192.168.227.7/robots.txt``` I discovered two important files:
 
 - ```fsocity.dic```: A wordlist file containing a large number of words, which I later used in brute-force attacks.
+
 - ```key-1-of-3.txt```: This file contained the first flag, marking the first step in the challenge.
 
 By accessing these files, I was able to download the wordlist and retrieve the first key.
@@ -87,6 +86,7 @@ By accessing these files, I was able to download the wordlist and retrieve the f
 <img src="images/1flag.png" style="align: right" alt="nmap" width="600"/>
 
 **Retrieving the First Key:**
+
 By visiting ```http://192.168.227.7/key-1-of-3.txt```, I retrieved the first key:
 
 <img src="images/1key.png" style="align: right" alt="nmap" width="600"/>
@@ -168,8 +168,9 @@ To trigger the reverse shell, I visited a non-existent page on the target websit
 ### Exploring the File System
 Once I had shell access, I began exploring the file system and found two files of interest in the ```/home/robot``` directory:
 
-```key-2-of-3.txt*```: This file contained the second flag, but I was unable to read it due to permission restrictions.
-```password.raw-md5```: This file contained an MD5 hashed password, which I suspected belonged to the user robot.
+- ```key-2-of-3.txt```: This file contained the second flag, but I was unable to read it due to permission restrictions.
+
+- ```password.raw-md5```: This file contained an MD5 hashed password, which I suspected belonged to the user robot.
 
 <img src="images/ls-to-robot.png" style="align: right" alt="nmap" width="600"/>
 
@@ -249,10 +250,12 @@ cat /root/key-3-of-3.txt
 ## Conclusions
 This write-up detailed my experience exploiting the MR Robot VM from VulnHub. The process involved reconnaissance, brute-force attacks, exploitation, and privilege escalation, culminating in capturing all three flags.
 
+The demonstration was carried out independently, following walkthroughs and guides (referenced at the end of this report).
+
 ## References
 - [Kali](https://www.kali.org/get-kali/#kali-platforms)
 - [Mr. Robot - Vulnhub](https://www.vulnhub.com/entry/mr-robot-1,151/)
 - [PHP Reverse Shell](https://github.com/pentestmonkey/php-reverse-shell/)
 - [Mr. Robot - Walkthrough](https://blog.christophetd.fr/write-up-mr-robot/)
 - [Mr. Robot - Walkthrough 2](https://medium.com/@cspanias/thms-mr-robot-ctf-walkthrough-2023-55ca5c19fbaf#25e2)
-- [Cos'è il file robot.txt](https://developers.google.com/search/docs/crawling-indexing/robots/robots-faq?hl=it#:~:text=No.-,Il%20file%20robots.,sottoporre%20a%20scansione%20la%20pagina)
+- [What's a robot.txt file](https://developers.google.com/search/docs/crawling-indexing/robots/robots-faq?hl=it#:~:text=No.-,Il%20file%20robots.,sottoporre%20a%20scansione%20la%20pagina)
